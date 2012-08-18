@@ -40,7 +40,7 @@ void setup(){
   }
 
   tick = 0;
-  algorithm_pick = 1;
+  algorithm_pick = 3;
 }
 
 void loop(){
@@ -55,6 +55,8 @@ void increment_algorithm(){
   switch (algorithm_pick) {
     case 0: fxn = &rainbow; break;
     case 1: fxn = &pink; break;
+    case 2: fxn = &unified_rainbow; break;
+    case 3: fxn = &static_rainbow; break;
   }
 
   for (int i=0; i<NUM_LIGHTS; i++)
