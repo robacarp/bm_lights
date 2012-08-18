@@ -4,11 +4,12 @@
 #define ENABLE 10
 #define CLOCK 13
 
+// button needs to be on 3 (INT1) for interrupt to work correctly
+#define BUTTON 3
+
 //algorithm speed/delay
 #define DELAY 10
 #define INCREMENT 1
-
-#define DEBUG
 
 #define NUM_LIGHTS 2
 #include "light.h"
@@ -16,6 +17,8 @@
 Light * lights[NUM_LIGHTS];
 unsigned long tick;
 unsigned int algorithm_pick;
+bool next_algorithm = false;
+unsigned long last_algorithm_advance;
 
 //the current lighting algorithm
 void (*fxn)(Light *, int, unsigned long);
@@ -25,13 +28,17 @@ void setup(){
   pinMode(LATCH, OUTPUT);
   pinMode(ENABLE, OUTPUT);
   pinMode(CLOCK, OUTPUT);
+  pinMode(BUTTON, INPUT);
 
   digitalWrite(ENABLE, 0);
   digitalWrite(LATCH, 0);
 
-#ifdef DEBUG
-  Serial.begin(115200);
-#endif
+  //enable internal pull-up resistor;
+  //connect button between this pin and ground
+  digitalWrite(BUTTON, 1);
+
+  //attach the interrup handler to that pin
+  attachInterrupt(1, button_interrupt, FALLING);
 
   for (int i = 0; i < NUM_LIGHTS; i ++){
     lights[i] = new Light;
@@ -40,10 +47,15 @@ void setup(){
   }
 
   tick = 0;
-  algorithm_pick = 4;
+  algorithm_pick = 0;
+  last_algorithm_advance = millis();
+
+  //don't not do this.
+  fxn = &rainbow;
 }
 
 void loop(){
+  switch_algorithms();
   increment_algorithm();
   update_lights();
   delay(DELAY);
@@ -51,14 +63,6 @@ void loop(){
 
 void increment_algorithm(){
   tick += INCREMENT;
-
-  switch (algorithm_pick) {
-    case 0: fxn = &rainbow; break;
-    case 1: fxn = &pink; break;
-    case 2: fxn = &unified_rainbow; break;
-    case 3: fxn = &static_rainbow; break;
-    case 4: fxn = &achromatic; break;
-  }
 
   for (int i=0; i<NUM_LIGHTS; i++)
     (*fxn)(lights[i], i, tick);
