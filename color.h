@@ -125,6 +125,7 @@ void Color::hsb_to_rgb( int * hsb, int * rgb) {
 }
 
 
+#ifdef DEBUG
 void Color::print_rgb(){
   Serial.print("red: ");
   Serial.print( red );
@@ -147,3 +148,4 @@ void Color::print_hsb(){
   Serial.print(" val: ");
   Serial.println(hsb[2]);
 }
+#endif
