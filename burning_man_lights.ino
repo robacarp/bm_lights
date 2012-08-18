@@ -15,6 +15,10 @@
 
 Light * lights[NUM_LIGHTS];
 unsigned long tick;
+unsigned int algorithm_pick;
+
+//the current lighting algorithm
+void (*fxn)(Light *, int, unsigned long);
 
 void setup(){
   pinMode(DATA, OUTPUT);
@@ -36,6 +40,7 @@ void setup(){
   }
 
   tick = 0;
+  algorithm_pick = 1;
 }
 
 void loop(){
@@ -46,8 +51,13 @@ void loop(){
 
 void increment_algorithm(){
   tick += INCREMENT;
-  Serial.println(tick);
+
+  switch (algorithm_pick) {
+    case 0: fxn = &rainbow; break;
+    case 1: fxn = &pink; break;
+  }
+
   for (int i=0; i<NUM_LIGHTS; i++)
-    rainbow(lights[i], i, tick);
+    (*fxn)(lights[i], i, tick);
 }
 
